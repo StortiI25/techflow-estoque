@@ -1,0 +1,93 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro campo(nome, rotulo, dados, erros, tipo='text', obrigatorio=false, ajuda='', col='col-md-6', extra='') %}
+<div class="{{ col }}">
+  <label for="{{ nome }}" class="form-label">{{ rotulo }}{% if obrigatorio %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+  <input type="{{ tipo }}" class="form-control{% if erros.get(nome) %} is-invalid{% endif %}" id="{{ nome }}" name="{{ nome }}"
+         value="{{ dados.get(nome) if dados.get(nome) is not none else '' }}" {% if obrigatorio %}required{% endif %} {{ extra|safe }}>
+  {% if erros.get(nome) %}<div class="invalid-feedback">{{ erros[nome] }}</div>{% endif %}
+  {% if ajuda %}<div class="form-text">{{ ajuda }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro area(nome, rotulo, dados, erros, col='col-12', linhas=3) %}
+<div class="{{ col }}">
+  <label for="{{ nome }}" class="form-label">{{ rotulo }}</label>
+  <textarea class="form-control{% if erros.get(nome) %} is-invalid{% endif %}" id="{{ nome }}" name="{{ nome }}" rows="{{ linhas }}">{{ dados.get(nome) or '' }}</textarea>
+  {% if erros.get(nome) %}<div class="invalid-feedback">{{ erros[nome] }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# opcoes: lista de linhas; valor/texto = nomes das colunas. Para listas simples (strings) use valor=None #}
+{% macro selecao(nome, rotulo, opcoes, dados, erros, valor='id', texto='nome', obrigatorio=false, vazio='Selecione...', col='col-md-6', ajuda='') %}
+<div class="{{ col }}">
+  <label for="{{ nome }}" class="form-label">{{ rotulo }}{% if obrigatorio %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+  <select class="form-select{% if erros.get(nome) %} is-invalid{% endif %}" id="{{ nome }}" name="{{ nome }}" {% if obrigatorio %}required{% endif %}>
+    <option value="">{{ vazio }}</option>
+    {% for o in opcoes %}
+      {% set v = o[valor] if valor else o %}{% set t = o[texto] if texto else o %}
+      <option value="{{ v }}" {% if dados.get(nome) is not none and dados.get(nome)|string == v|string %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select>
+  {% if erros.get(nome) %}<div class="invalid-feedback">{{ erros[nome] }}</div>{% endif %}
+  {% if ajuda %}<div class="form-text">{{ ajuda }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro status_badge(status) %}
+  {% if status == 'esgotado' %}<span class="badge-tf badge-danger">Esgotado</span>
+  {% elif status == 'baixo' %}<span class="badge-tf badge-warning">Estoque baixo</span>
+  {% else %}<span class="badge-tf badge-success">Normal</span>{% endif %}
+{% endmacro %}
+
+{% macro ativo_badge(ativo) %}
+  {% if ativo %}<span class="badge-tf badge-success">Ativo</span>{% else %}<span class="badge-tf badge-muted">Inativo</span>{% endif %}
+{% endmacro %}
+
+{% macro tipo_badge(tipo) %}
+  {% if tipo == 'entrada' %}<span class="badge-tf badge-success">Entrada</span>
+  {% elif tipo == 'saida' %}<span class="badge-tf badge-danger">Saída</span>
+  {% else %}<span class="badge-tf badge-info">Ajuste</span>{% endif %}
+{% endmacro %}
+
+{% macro delta(valor) %}<span class="{{ 'qty-pos' if valor > 0 else 'qty-neg' }}">{{ '+' if valor > 0 }}{{ valor }}</span>{% endmacro %}
+
+{% macro notif_icone(tipo) %}
+  {% set mapa = {'estoque_baixo': ('exclamation-triangle', 'warning'), 'esgotado': ('x-octagon', 'danger'), 'sem_movimentacao': ('hourglass-split', 'info'),
+                 'entrada': ('box-arrow-in-down', 'info'), 'saida': ('check2-circle', 'success'), 'sistema': ('gear', 'info')} %}
+  {% set m = mapa.get(tipo, ('bell', 'info')) %}
+  <span class="alert-ico {{ m[1] }}"><i class="bi bi-{{ m[0] }}"></i></span>
+{% endmacro %}
+
+{% macro vazio(icone, titulo, texto='') %}
+<div class="empty-state"><i class="bi bi-{{ icone }}"></i><h3>{{ titulo }}</h3>{% if texto %}<p class="mb-0">{{ texto }}</p>{% endif %}{{ caller() if caller else '' }}</div>
+{% endmacro %}
+
+{% macro paginacao(pag) %}
+{% if pag.total %}
+<div class="pagination-tf">
+  <span>Mostrando {{ ((pag.pagina - 1) * pag.por_pagina) + 1 }}–{{ [pag.pagina * pag.por_pagina, pag.total]|min }} de {{ pag.total }}</span>
+  {% if pag.paginas > 1 %}
+  <nav aria-label="Paginação"><ul class="pagination pagination-sm">
+    <li class="page-item {{ 'disabled' if pag.pagina <= 1 }}"><a class="page-link" href="{{ url_pagina(pag.pagina - 1) }}" aria-label="Anterior"><i class="bi bi-chevron-left"></i></a></li>
+    {% for n in range(1, pag.paginas + 1) %}
+      {% if n == 1 or n == pag.paginas or (n - pag.pagina)|abs <= 1 %}
+        <li class="page-item {{ 'active' if n == pag.pagina }}"><a class="page-link" href="{{ url_pagina(n) }}">{{ n }}</a></li>
+      {% elif (n - pag.pagina)|abs == 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endfor %}
+    <li class="page-item {{ 'disabled' if pag.pagina >= pag.paginas }}"><a class="page-link" href="{{ url_pagina(pag.pagina + 1) }}" aria-label="Próxima"><i class="bi bi-chevron-right"></i></a></li>
+  </ul></nav>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro cabecalho(titulo, subtitulo='') %}
+<div class="page-head"><div><h1>{{ titulo }}</h1>{% if subtitulo %}<p>{{ subtitulo }}</p>{% endif %}</div><div class="d-flex gap-2 flex-wrap">{{ caller() if caller else '' }}</div></div>
+{% endmacro %}
+
+{% macro btn_confirma(url, texto, mensagem, titulo='Confirmar ação', classe='btn btn-sm btn-light-tf', icone='') %}
+<form method="post" action="{{ url }}" class="d-inline" data-confirm="{{ mensagem }}" data-confirm-title="{{ titulo }}">
+  {{ csrf() }}<button type="submit" class="{{ classe }}" data-no-loading>{% if icone %}<i class="bi bi-{{ icone }}"></i> {% endif %}{{ texto }}</button>
+</form>
+{% endmacro %}

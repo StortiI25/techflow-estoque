@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo, cabecalho, csrf %}
+{% block titulo %}Meu perfil{% endblock %}
+{% block content %}
+{% call cabecalho('Meu perfil', 'Atualize seus dados e sua senha.') %}{% endcall %}
+<form method="post" class="card-tf needs-validation" novalidate style="max-width:820px">{{ csrf() }}
+  <div class="form-section"><h2>Dados pessoais</h2><div class="row g-3">
+    {{ campo('nome', 'Nome completo', dados, erros, obrigatorio=true) }}
+    {{ campo('cargo', 'Cargo', dados, erros) }}
+    {{ campo('telefone', 'Telefone', dados, erros, 'tel') }}
+    <div class="col-md-6"><label class="form-label">E-mail / Usuário / Perfil</label><input class="form-control" value="{{ dados.email }} · {{ dados.usuario }} · {{ PERFIS[dados.perfil] }}" disabled></div>
+  </div></div>
+  <div class="form-section"><h2>Alterar senha <span class="text-muted fw-normal small">(opcional)</span></h2><div class="row g-3">
+    {{ campo('senha_atual', 'Senha atual', {}, erros, 'password', extra='autocomplete="current-password"') }}<div class="col-md-6"></div>
+    {{ campo('senha_nova', 'Nova senha', {}, erros if not erros.get('senha') else {'senha_nova': erros['senha']}, 'password', ajuda='Mínimo de 8 caracteres, com maiúscula, minúscula e número.', extra='autocomplete="new-password"') }}
+    {{ campo('confirmar_senha', 'Confirmar nova senha', {}, erros, 'password') }}
+  </div></div>
+  <div class="form-actions"><button class="btn btn-primary">Salvar alterações</button></div>
+</form>
+{% endblock %}

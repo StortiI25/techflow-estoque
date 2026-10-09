@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho %}
+{% block titulo %}Editar produto{% endblock %}
+{% block content %}
+{% call cabecalho('Editar produto', p.nome ~ ' · ' ~ p.sku) %}{% endcall %}
+{% set editando = true %}
+{% include 'produtos/_form.html' %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/produtos.js') }}"></script>{% endblock %}

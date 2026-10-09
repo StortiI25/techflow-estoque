@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo, selecao, cabecalho, csrf %}
+{% block titulo %}{{ 'Editar cliente' if c else 'Novo cliente' }}{% endblock %}
+{% block content %}
+{% call cabecalho('Editar cliente' if c else 'Novo cliente') %}{% endcall %}
+<form method="post" class="card-tf needs-validation" novalidate>{{ csrf() }}
+  <div class="row g-3">
+    {{ campo('nome', 'Nome', dados, erros, obrigatorio=true, col='col-md-6') }}{{ campo('documento', 'CPF/CNPJ', dados, erros) }}
+    {{ campo('email', 'E-mail', dados, erros, 'email') }}{{ campo('telefone', 'Telefone', dados, erros, 'tel') }}
+    {{ campo('endereco', 'Endereço', dados, erros, col='col-md-6') }}{{ campo('cidade', 'Cidade', dados, erros, col='col-md-4') }}
+    {{ selecao('estado', 'Estado', estados, dados, erros, valor=None, texto=None, vazio='UF', col='col-md-2') }}
+  </div>
+  <div class="form-actions mt-3"><a class="btn btn-light-tf" href="{{ url_for('clientes.lista') }}">Cancelar</a><button class="btn btn-primary">Salvar</button></div>
+</form>
+{% endblock %}

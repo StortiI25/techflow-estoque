@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo %}
+{% block titulo %}Criar conta{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="auth-card" style="max-width:520px">
+  <div class="brand"><span class="logo"><i class="bi bi-person-plus"></i></span><div><strong>Criar conta</strong><small>Acesso como visualizador</small></div></div>
+  <form method="post" class="needs-validation" novalidate><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-3">
+      {{ campo('nome', 'Nome completo', dados, erros, obrigatorio=true, col='col-12') }}
+      {{ campo('usuario', 'Usuário', dados, erros, obrigatorio=true) }}
+      {{ campo('email', 'E-mail', dados, erros, 'email', true) }}
+      {{ campo('telefone', 'Telefone (com DDD)', dados, erros, 'tel', col='col-12') }}
+      {{ campo('senha', 'Senha', {}, erros, 'password', true, 'Mínimo de 8 caracteres, com maiúscula, minúscula e número.') }}
+      {{ campo('confirmar_senha', 'Confirmar senha', {}, erros, 'password', true) }}
+      <div class="col-12"><div class="form-check"><input class="form-check-input {{ 'is-invalid' if erros.get('aceite') }}" type="checkbox" id="aceite" name="aceite" required>
+        <label class="form-check-label small" for="aceite">Aceito os termos de proteção de dados.</label>{% if erros.get('aceite') %}<div class="invalid-feedback">{{ erros['aceite'] }}</div>{% endif %}</div></div>
+    </div>
+    <button class="btn btn-primary w-100 mt-4">Criar conta</button>
+    <a class="btn btn-link w-100 mt-1" href="{{ url_for('auth.login') }}">Voltar</a>
+  </form>
+</div></div>
+{% endblock %}

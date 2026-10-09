@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import ativo_badge, vazio %}
+{% block titulo %}{{ c.nome }}{% endblock %}
+{% block content %}
+<div class="breadcrumb-tf"><a href="{{ url_for('clientes.lista') }}">Clientes</a> / {{ c.nome }}</div>
+<div class="page-head"><div><h1>{{ c.nome }}</h1><div class="d-flex gap-2 align-items-center">{{ ativo_badge(c.ativo) }}<span class="text-muted">{{ c.documento|documento }}</span></div></div>
+  {% if pode('cadastros') %}<a class="btn btn-light-tf" href="{{ url_for('clientes.editar', id=c.id) }}"><i class="bi bi-pencil me-1"></i>Editar</a>{% endif %}</div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Valor total</span><span class="v">{{ d.resumo.valor_total|brl }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Quantidade retirada</span><span class="v">{{ d.resumo.quantidade|numero }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Produtos distintos</span><span class="v">{{ d.resumo.produtos }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Última movimentação</span><span class="v">{{ d.resumo.ultima|data_br }}</span></div></div>
+</div>
+<div class="card-tf mb-3"><div class="card-head"><h2>Dados</h2></div><dl class="detail-list">
+  <div><dt>E-mail</dt><dd>{{ c.email or '—' }}</dd></div><div><dt>Telefone</dt><dd>{{ c.telefone or '—' }}</dd></div>
+  <div><dt>Endereço</dt><dd>{{ c.endereco or '—' }}</dd></div><div><dt>Cidade/UF</dt><dd>{{ c.cidade or '—' }}{{ '/' ~ c.estado if c.estado }}</dd></div></dl></div>
+<div class="card-tf flush"><div class="card-head"><h2>Saídas relacionadas</h2></div>
+  {% if d.saidas %}<div class="table-responsive"><table class="table-tf"><thead><tr><th>Data</th><th>Produto</th><th class="num">Quantidade</th><th class="num">Valor total</th></tr></thead><tbody>
+    {% for m in d.saidas %}<tr><td><a class="text-reset" href="{{ url_for('movimentacoes.detalhes', id=m.id) }}">{{ m.data_hora|data_br }}</a></td><td>{{ m.produto }}</td><td class="num">{{ m.quantidade }}</td><td class="num">{{ m.valor_total|brl }}</td></tr>{% endfor %}</tbody></table></div>
+  {% else %}{% call vazio('box-arrow-up', 'Nenhuma saída para este cliente') %}{% endcall %}{% endif %}</div>
+{% endblock %}

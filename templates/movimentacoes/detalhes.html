@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import tipo_badge, delta %}
+{% block titulo %}Movimentação #{{ m.id }}{% endblock %}
+{% block content %}
+<div class="breadcrumb-tf"><a href="{{ url_for('movimentacoes.lista') }}">Movimentações</a> / #{{ m.id }}</div>
+<div class="page-head"><div><h1>Movimentação #{{ m.id }}</h1><div class="d-flex gap-2 align-items-center">{{ tipo_badge(m.tipo) }}<span class="text-muted">{{ m.data_hora|data_br }}</span></div></div>
+  <a class="btn btn-light-tf" href="{{ url_for('produtos.detalhes', id=m.produto_id) }}"><i class="bi bi-box me-1"></i>Ver produto</a></div>
+<div class="card-tf"><dl class="detail-list">
+  <div><dt>Produto</dt><dd>{{ m.produto }} ({{ m.sku }})</dd></div><div><dt>Quantidade</dt><dd>{{ delta(m.delta) }} {{ m.unidade }}</dd></div>
+  <div><dt>Estoque anterior</dt><dd>{{ m.estoque_anterior }}</dd></div><div><dt>Estoque posterior</dt><dd>{{ m.estoque_posterior }}</dd></div>
+  <div><dt>Motivo</dt><dd>{{ m.motivo|capitalize }}</dd></div><div><dt>Responsável</dt><dd>{{ m.usuario }}</dd></div>
+  <div><dt>Valor unitário</dt><dd>{{ m.valor_unitario|brl }}</dd></div><div><dt>Valor total</dt><dd>{{ m.valor_total|brl }}</dd></div>
+  <div><dt>Cliente</dt><dd>{{ m.cliente or '—' }}</dd></div><div><dt>Fornecedor</dt><dd>{{ m.fornecedor or '—' }}</dd></div>
+  <div style="grid-column:1/-1"><dt>Observação</dt><dd>{{ m.observacao or '—' }}</dd></div></dl>
+  <p class="text-muted small mt-3 mb-0"><i class="bi bi-lock me-1"></i>Movimentações são imutáveis. Para corrigir, registre um ajuste.</p></div>
+{% endblock %}

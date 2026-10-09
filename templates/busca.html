@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, vazio %}
+{% block titulo %}Busca{% endblock %}
+{% block content %}
+{{ cabecalho('Resultados da busca', 'Termo: “' ~ termo ~ '”' if termo else 'Digite ao menos 2 caracteres na busca.') }}
+{% set total = resultados.produtos|length + resultados.categorias|length + resultados.fornecedores|length + resultados.clientes|length %}
+{% if not total %}<div class="card-tf">{% call vazio('search', 'Nenhum resultado', 'Tente outro nome, SKU, código de barras, categoria, fornecedor ou cliente.') %}{% endcall %}</div>{% else %}
+<div class="d-flex flex-column gap-3">
+  {% if resultados.produtos %}<div class="card-tf flush"><div class="card-head"><h2>Produtos</h2></div><div class="table-responsive"><table class="table-tf"><thead><tr><th>Produto</th><th>SKU</th><th>Categoria</th><th class="num">Estoque</th></tr></thead><tbody>
+    {% for p in resultados.produtos %}<tr><td><a class="name" href="{{ url_for('produtos.detalhes', id=p.id) }}">{{ p.nome }}</a><span class="sub">{{ p.codigo_barras or '' }}</span></td><td>{{ p.sku }}</td><td>{{ p.categoria }}</td><td class="num">{{ p.estoque_atual }}</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if resultados.categorias %}<div class="card-tf flush"><div class="card-head"><h2>Categorias</h2></div><div class="table-responsive"><table class="table-tf"><tbody>
+    {% for c in resultados.categorias %}<tr><td><a class="name" href="{{ url_for('produtos.lista', categoria_id=c.id) }}">{{ c.nome }}</a><span class="sub">{{ c.descricao or '' }}</span></td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if resultados.fornecedores %}<div class="card-tf flush"><div class="card-head"><h2>Fornecedores</h2></div><div class="table-responsive"><table class="table-tf"><tbody>
+    {% for f in resultados.fornecedores %}<tr><td><a class="name" href="{{ url_for('fornecedores.detalhes', id=f.id) }}">{{ f.nome_fantasia or f.razao_social }}</a><span class="sub">{{ f.cnpj|documento if f.cnpj }} {{ f.cidade or '' }}</span></td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+  {% if resultados.clientes %}<div class="card-tf flush"><div class="card-head"><h2>Clientes</h2></div><div class="table-responsive"><table class="table-tf"><tbody>
+    {% for c in resultados.clientes %}<tr><td><a class="name" href="{{ url_for('clientes.detalhes', id=c.id) }}">{{ c.nome }}</a><span class="sub">{{ c.documento|documento if c.documento }} {{ c.cidade or '' }}</span></td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+</div>{% endif %}
+{% endblock %}

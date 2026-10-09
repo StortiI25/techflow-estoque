@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo, area, cabecalho, csrf %}
+{% block titulo %}{{ 'Editar categoria' if c else 'Nova categoria' }}{% endblock %}
+{% block content %}
+{% call cabecalho('Editar categoria' if c else 'Nova categoria') %}{% endcall %}
+<form method="post" class="card-tf needs-validation" novalidate style="max-width:720px">{{ csrf() }}
+  <div class="row g-3">{{ campo('nome', 'Nome', dados, erros, obrigatorio=true, col='col-12') }}{{ area('descricao', 'Descrição', dados, erros) }}</div>
+  <div class="form-actions mt-3"><a class="btn btn-light-tf" href="{{ url_for('categorias.lista') }}">Cancelar</a><button class="btn btn-primary">Salvar</button></div>
+</form>
+{% endblock %}

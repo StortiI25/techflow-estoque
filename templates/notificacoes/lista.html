@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, notif_icone, paginacao, vazio, csrf %}
+{% block titulo %}Alertas{% endblock %}
+{% block content %}
+{% call cabecalho('Alertas', 'Situação atual do estoque e histórico de notificações.') %}{% endcall %}
+<div class="card-tf mb-3"><div class="card-head"><h2>Alertas ativos <span class="text-muted fw-normal">({{ alertas|length }})</span></h2></div>
+  {% for a in alertas %}<a class="alert-row text-reset" href="{{ url_for('produtos.detalhes', id=a.produto_id) }}">{{ notif_icone(a.tipo) }}<div class="flex-grow-1"><div class="t">{{ a.titulo }}</div><div class="m">{{ a.mensagem }}</div></div><i class="bi bi-chevron-right text-muted"></i></a>
+  {% else %}{% call vazio('check2-circle', 'Tudo em ordem', 'Nenhum produto com estoque baixo, esgotado ou parado.') %}{% endcall %}{% endfor %}</div>
+<div class="card-tf flush">
+  <form class="filter-bar" method="get">
+    <div class="f"><label for="tipo">Tipo</label><select class="form-select" id="tipo" name="tipo"><option value="">Todos</option>{% for v, t in tipos.items() %}<option value="{{ v }}" {{ 'selected' if tipo == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="somente">Exibir</label><select class="form-select" id="somente" name="somente"><option value="">Todas</option><option value="nao_lidas" {{ 'selected' if nao_lidas }}>Somente não lidas</option></select></div>
+    <div class="ms-auto"><button class="btn btn-light-tf" type="submit" form="marcarTodas" data-no-loading>Marcar todas como lidas</button></div>
+  </form>
+  <form id="marcarTodas" method="post" action="{{ url_for('notificacoes.marcar_todas') }}">{{ csrf() }}</form>
+  {% if pag.itens %}<div class="px-3">{% for n in pag.itens %}
+    <div class="alert-row {{ 'opacity-50' if n.lida }}">{{ notif_icone(n.tipo) }}<div class="flex-grow-1"><div class="t">{{ n.titulo }}</div><div class="m">{{ n.mensagem }}</div><div class="m">{{ n.criada_em|data_br }}</div></div>
+      {% if n.produto_id %}<a class="btn btn-sm btn-light-tf" href="{{ url_for('produtos.detalhes', id=n.produto_id) }}" aria-label="Ver produto"><i class="bi bi-eye"></i></a>{% endif %}
+      {% if not n.lida %}<form method="post" action="{{ url_for('notificacoes.marcar_lida', id=n.id) }}">{{ csrf() }}<button class="btn btn-sm btn-light-tf" data-no-loading><i class="bi bi-check2"></i> Lida</button></form>{% else %}<span class="badge-tf badge-muted">Lida</span>{% endif %}</div>{% endfor %}</div>
+  {{ paginacao(pag) }}{% else %}{% call vazio('bell-slash', 'Nenhuma notificação', 'As notificações aparecem quando há movimentações ou alertas de estoque.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

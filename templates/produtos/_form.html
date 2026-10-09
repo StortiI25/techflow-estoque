@@ -1,0 +1,33 @@
+{% from '_macros.html' import campo, area, selecao, csrf %}
+<form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>{{ csrf() }}
+  <div class="card-tf mb-3">
+    <div class="form-section mb-0"><h2>Identificação</h2><div class="row g-3">
+      {{ campo('nome', 'Nome do produto', dados, erros, obrigatorio=true, col='col-md-8') }}
+      {{ campo('sku', 'SKU', dados, erros, obrigatorio=true, col='col-md-4', ajuda='Código interno único.') }}
+      {{ campo('codigo_barras', 'Código de barras', dados, erros, col='col-md-4') }}
+      {{ selecao('categoria_id', 'Categoria', categorias, dados, erros, obrigatorio=true, col='col-md-4') }}
+      {{ selecao('fornecedor_id', 'Fornecedor', fornecedores, dados, erros, vazio='Sem fornecedor', col='col-md-4') }}
+      {{ area('descricao', 'Descrição', dados, erros) }}
+    </div></div>
+  </div>
+  <div class="card-tf mb-3">
+    <div class="form-section mb-0"><h2>Estoque e preços</h2><div class="row g-3">
+      {% if not editando %}{{ campo('quantidade_inicial', 'Quantidade inicial', dados, erros, 'number', col='col-md-3', ajuda='Vira uma entrada no histórico.', extra='min="0" step="1"') }}{% endif %}
+      {{ campo('estoque_minimo', 'Estoque mínimo', dados, erros, 'number', true, col='col-md-3', extra='min="0" step="1"') }}
+      {{ campo('estoque_maximo', 'Estoque máximo', dados, erros, 'number', col='col-md-3', extra='min="0" step="1"') }}
+      {{ selecao('unidade', 'Unidade de medida', unidades, dados, erros, valor=None, texto=None, col='col-md-3') }}
+      {{ campo('preco_custo', 'Preço de custo (R$)', dados, erros, 'number', true, col='col-md-3', extra='min="0" step="0.01"') }}
+      {{ campo('preco_venda', 'Preço de venda (R$)', dados, erros, 'number', col='col-md-3', extra='min="0" step="0.01"') }}
+      {% if editando %}<div class="col-md-6"><div class="alert alert-info mb-0 small"><i class="bi bi-info-circle me-1"></i>O estoque atual ({{ p.estoque_atual }}) só muda por <strong>movimentações</strong> (entrada, saída ou ajuste).</div></div>{% endif %}
+    </div></div>
+  </div>
+  <div class="card-tf mb-3">
+    <div class="form-section mb-0"><h2>Imagem</h2>
+      <div class="d-flex gap-3 align-items-center flex-wrap">
+        <img id="imgPreview" class="img-preview" alt="Prévia" src="{{ url_for('static', filename='uploads/' ~ p.imagem) if editando and p.imagem else '' }}" style="{{ '' if editando and p.imagem else 'display:none' }}">
+        <div><input type="file" class="form-control {{ 'is-invalid' if erros.get('imagem') }}" id="imagem" name="imagem" accept="image/png,image/jpeg,image/webp">
+          {% if erros.get('imagem') %}<div class="invalid-feedback">{{ erros['imagem'] }}</div>{% endif %}<div class="form-text">PNG, JPG ou WEBP, até 2 MB.</div></div>
+      </div></div>
+  </div>
+  <div class="form-actions"><a class="btn btn-light-tf" href="{{ url_for('produtos.detalhes', id=p.id) if editando else url_for('produtos.lista') }}">Cancelar</a><button class="btn btn-primary">{{ 'Salvar alterações' if editando else 'Cadastrar produto' }}</button></div>
+</form>

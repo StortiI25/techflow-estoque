@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, paginacao, vazio %}
+{% block titulo %}Auditoria{% endblock %}
+{% block content %}
+{% call cabecalho('Auditoria', 'Registro imutável das ações no sistema. Logs não podem ser editados nem apagados.') %}{% endcall %}
+<div class="card-tf flush">
+  <form class="filter-bar" method="get">
+    <div class="f grow"><label for="q">Pesquisar</label><input type="search" class="form-control" id="q" name="q" value="{{ f.get('q', '') }}" placeholder="Descrição ou entidade"></div>
+    <div class="f"><label for="acao">Ação</label><select class="form-select" id="acao" name="acao"><option value="">Todas</option>{% for a in acoes %}<option {{ 'selected' if f.get('acao') == a }}>{{ a }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="usuario_id">Usuário</label><select class="form-select" id="usuario_id" name="usuario_id"><option value="">Todos</option>{% for u in usuarios %}<option value="{{ u.id }}" {{ 'selected' if f.get('usuario_id') == u.id|string }}>{{ u.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="data_inicio">De</label><input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ f.get('data_inicio', '') }}"></div>
+    <div class="f"><label for="data_fim">Até</label><input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ f.get('data_fim', '') }}"></div>
+  </form>
+  {% if pag.itens %}<div class="table-responsive"><table class="table-tf table-stack"><thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Descrição</th><th>IP</th></tr></thead>
+    <tbody>{% for l in pag.itens %}<tr><td data-label="Data">{{ l.data_hora|data_br }}</td><td data-label="Usuário">{{ l.usuario or 'Sistema' }}</td><td data-label="Ação"><span class="badge-tf badge-info">{{ l.acao }}</span></td>
+      <td data-label="Entidade">{{ l.entidade or '—' }}{{ ' #' ~ l.entidade_id if l.entidade_id }}</td><td data-label="Descrição">{{ l.descricao }}</td><td data-label="IP">{{ l.ip or '—' }}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(pag) }}{% else %}{% call vazio('shield-check', 'Nenhum registro', 'Nenhuma ação corresponde aos filtros.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

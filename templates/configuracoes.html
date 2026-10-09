@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo, cabecalho, csrf %}
+{% block titulo %}Configurações{% endblock %}
+{% block content %}
+{% call cabecalho('Configurações', 'Ajustes gerais do sistema (somente administrador).') %}{% endcall %}
+<form method="post" class="card-tf needs-validation" novalidate style="max-width:760px">{{ csrf() }}
+  <div class="form-section"><h2>Alertas</h2><div class="row g-3">
+    {{ campo('dias_sem_movimentacao', 'Dias sem movimentação', cfg, erros, 'number', true, 'Produtos com estoque que ficarem esse período sem movimentar geram alerta.', 'col-md-6', 'min="1" max="365"') }}
+  </div></div>
+  <div class="form-section"><h2>Acesso</h2>
+    <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="permitir_cadastro_publico" name="permitir_cadastro_publico" {{ 'checked' if cfg.get('permitir_cadastro_publico') in ('1', 'on') }}>
+      <label class="form-check-label" for="permitir_cadastro_publico">Permitir auto-cadastro na tela de login (cria usuários com perfil Visualizador)</label></div>
+    <div class="form-text">Desativado por padrão: contas de visualizador enxergam todo o estoque, clientes e fornecedores.</div></div>
+  <div class="form-actions"><button class="btn btn-primary">Salvar configurações</button></div>
+</form>
+{% endblock %}

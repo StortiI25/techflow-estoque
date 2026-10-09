@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, ativo_badge, tipo_badge, delta, vazio, btn_confirma %}
+{% block titulo %}{{ p.nome }}{% endblock %}
+{% block content %}
+<div class="breadcrumb-tf"><a href="{{ url_for('produtos.lista') }}">Produtos</a> / {{ p.sku }}</div>
+<div class="page-head">
+  <div class="d-flex gap-3 align-items-center">
+    {% if p.imagem %}<img class="img-preview" src="{{ url_for('static', filename='uploads/' ~ p.imagem) }}" alt="{{ p.nome }}">{% endif %}
+    <div><h1>{{ p.nome }}</h1><div class="d-flex gap-2 align-items-center flex-wrap">{% if p.ativo %}{{ status_badge(p.status) }}{% else %}{{ ativo_badge(0) }}{% endif %}<span class="text-muted">SKU {{ p.sku }}</span></div></div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    {% if p.ativo and pode('movimentar') %}
+    <a class="btn btn-primary" href="{{ url_for('movimentacoes.nova_entrada', produto_id=p.id) }}"><i class="bi bi-box-arrow-in-down me-1"></i>Entrada</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('movimentacoes.nova_saida', produto_id=p.id) }}"><i class="bi bi-box-arrow-up me-1"></i>Saída</a>{% endif %}
+    {% if p.ativo and pode('ajustar') %}<a class="btn btn-light-tf" href="{{ url_for('movimentacoes.novo_ajuste', produto_id=p.id) }}"><i class="bi bi-sliders me-1"></i>Ajuste</a>{% endif %}
+    {% if pode('cadastros') %}<a class="btn btn-light-tf" href="{{ url_for('produtos.editar', id=p.id) }}"><i class="bi bi-pencil me-1"></i>Editar</a>
+    {{ btn_confirma(url_for('produtos.status', id=p.id), 'Desativar' if p.ativo else 'Reativar', ('Desativar ' ~ p.nome ~ '? O histórico será preservado.') if p.ativo else 'Reativar este produto?', 'Desativar produto?' if p.ativo else 'Reativar produto?', 'btn btn-light-tf') }}{% endif %}
+  </div>
+</div>
+{% if p.ativo and p.status != 'normal' %}<div class="alert alert-{{ 'danger' if p.status == 'esgotado' else 'warning' }}"><i class="bi bi-exclamation-triangle me-1"></i>{{ 'Este produto está esgotado.' if p.status == 'esgotado' else 'Este produto está abaixo do estoque mínimo.' }}</div>{% endif %}
+
+<div class="row g-3 mb-3">
+  {% for rotulo, valor in [('Estoque atual', p.estoque_atual ~ ' ' ~ p.unidade), ('Estoque mínimo', p.estoque_minimo), ('Estoque máximo', p.estoque_maximo if p.estoque_maximo is not none else '—'),
+                           ('Preço de custo', p.preco_custo|brl), ('Preço de venda', p.preco_venda|brl), ('Valor total em estoque', (p.estoque_atual * p.preco_custo)|brl)] %}
+  <div class="col-6 col-md-4 col-xl-2"><div class="card-tf stat-card h-100"><span class="l">{{ rotulo }}</span><span class="v">{{ valor }}</span></div></div>{% endfor %}
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-xl-5"><div class="card-tf h-100"><div class="card-head"><h2>Informações</h2></div>
+    <dl class="detail-list" style="grid-template-columns:1fr 1fr">
+      <div><dt>Categoria</dt><dd>{{ p.categoria }}</dd></div><div><dt>Fornecedor</dt><dd>{{ p.fornecedor or '—' }}</dd></div>
+      <div><dt>Código de barras</dt><dd>{{ p.codigo_barras or '—' }}</dd></div><div><dt>Unidade</dt><dd>{{ p.unidade }}</dd></div>
+      <div style="grid-column:1/-1"><dt>Descrição</dt><dd>{{ p.descricao or '—' }}</dd></div>
+      <div><dt>Cadastrado em</dt><dd>{{ p.criado_em|data_br }}</dd></div><div><dt>Atualizado em</dt><dd>{{ p.atualizado_em|data_br }}</dd></div>
+    </dl></div></div>
+  <div class="col-12 col-xl-7"><div class="card-tf h-100"><div class="card-head"><h2>Evolução do estoque</h2></div>
+    <div class="chart-box small"><canvas id="chartEvolucao" data-id="{{ p.id }}" role="img" aria-label="Evolução do estoque"></canvas><div class="chart-msg chart-error">Sem movimentações para exibir.</div></div></div></div>
+</div>
+
+<div class="card-tf flush">
+  <div class="card-head"><h2>Histórico de movimentações</h2><a href="{{ url_for('movimentacoes.lista', produto_id=p.id) }}">Ver tudo</a></div>
+  {% if historico %}<div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Data</th><th>Tipo</th><th class="num">Quantidade</th><th class="num">Estoque anterior</th><th class="num">Estoque posterior</th><th>Usuário</th><th>Motivo</th></tr></thead>
+    <tbody>{% for m in historico %}<tr>
+      <td data-label="Data"><a class="text-reset" href="{{ url_for('movimentacoes.detalhes', id=m.id) }}">{{ m.data_hora|data_br }}</a></td><td data-label="Tipo">{{ tipo_badge(m.tipo) }}</td>
+      <td data-label="Quantidade" class="num">{{ delta(m.delta) }}</td><td data-label="Anterior" class="num">{{ m.estoque_anterior }}</td><td data-label="Posterior" class="num">{{ m.estoque_posterior }}</td>
+      <td data-label="Usuário">{{ m.usuario }}</td><td data-label="Motivo">{{ m.motivo|capitalize }}</td></tr>{% endfor %}</tbody></table></div>
+  {% else %}{% call vazio('arrow-left-right', 'Sem movimentações', 'Este produto ainda não teve entradas ou saídas.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script><script src="{{ url_for('static', filename='js/produtos.js') }}"></script>{% endblock %}

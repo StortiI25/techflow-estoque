@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, csrf, area %}
+{% from 'movimentacoes/_partes.html' import produto_select, motivo_select, preview %}
+{% block titulo %}Ajuste de estoque{% endblock %}
+{% block content %}
+{% call cabecalho('Ajuste de estoque', 'Somente administrador. Informe o saldo correto; a diferença vira uma movimentação de ajuste.') %}{% endcall %}
+{% if erro %}<div class="alert alert-danger"><i class="bi bi-x-circle me-1"></i>{{ erro }}</div>{% endif %}
+<form method="post" class="card-tf" style="max-width:860px">{{ csrf() }}
+  <div class="row g-3">
+    <div class="col-12"><span class="badge-tf badge-info">Tipo: AJUSTE</span></div>
+    {{ produto_select(produtos, dados) }}
+    <div class="col-md-6"><label for="novo_estoque" class="form-label">Estoque correto (novo saldo) <span class="text-danger" aria-hidden="true">*</span></label><input type="number" min="0" step="1" class="form-control" id="novo_estoque" name="novo_estoque" value="{{ dados.get('novo_estoque', '') }}" required></div>
+    {{ motivo_select(motivos, dados) }}
+    {{ area('observacao', 'Justificativa (obrigatória)', dados, {}) }}
+    {{ preview('ajuste', 'Confirmar ajuste') }}
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/movimentacoes.js') }}"></script>{% endblock %}

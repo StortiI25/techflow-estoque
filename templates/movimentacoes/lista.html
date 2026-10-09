@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, tipo_badge, delta, paginacao, vazio %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block content %}
+{% call cabecalho(titulo, 'Todas as movimentações são registradas com usuário, data e estoque antes/depois.') %}
+  {% if pode('movimentar') %}<a class="btn btn-primary" href="{{ url_for('movimentacoes.nova_entrada') }}"><i class="bi bi-box-arrow-in-down me-1"></i>Nova entrada</a>
+  <a class="btn btn-outline-primary" href="{{ url_for('movimentacoes.nova_saida') }}"><i class="bi bi-box-arrow-up me-1"></i>Nova saída</a>{% endif %}
+  {% if pode('ajustar') %}<a class="btn btn-light-tf" href="{{ url_for('movimentacoes.novo_ajuste') }}"><i class="bi bi-sliders me-1"></i>Ajuste</a>{% endif %}
+{% endcall %}
+<div class="card-tf flush">
+  <form class="filter-bar" method="get">
+    <div class="f grow"><label for="produto_id">Produto</label><select class="form-select" id="produto_id" name="produto_id"><option value="">Todos</option>
+      {% for p in produtos %}<option value="{{ p.id }}" {{ 'selected' if f.get('produto_id') == p.id|string }}>{{ p.nome }} ({{ p.sku }})</option>{% endfor %}</select></div>
+    {% if not tipo_fixo %}<div class="f"><label for="tipo">Tipo</label><select class="form-select" id="tipo" name="tipo"><option value="">Todos</option>
+      {% for v, t in [('entrada','Entrada'),('saida','Saída'),('ajuste','Ajuste')] %}<option value="{{ v }}" {{ 'selected' if f.get('tipo') == v }}>{{ t }}</option>{% endfor %}</select></div>{% endif %}
+    <div class="f"><label for="data_inicio">De</label><input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ f.get('data_inicio', '') }}"></div>
+    <div class="f"><label for="data_fim">Até</label><input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ f.get('data_fim', '') }}"></div>
+    <div class="f"><label for="usuario_id">Usuário</label><select class="form-select" id="usuario_id" name="usuario_id"><option value="">Todos</option>
+      {% for u in usuarios %}<option value="{{ u.id }}" {{ 'selected' if f.get('usuario_id') == u.id|string }}>{{ u.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="motivo">Motivo</label><select class="form-select" id="motivo" name="motivo"><option value="">Todos</option>
+      {% for m in motivos %}<option value="{{ m }}" {{ 'selected' if f.get('motivo') == m }}>{{ m|capitalize }}</option>{% endfor %}</select></div>
+    {% if f.keys()|reject('equalto', 'tipo')|list or (f.get('tipo') and not tipo_fixo) %}<a class="btn btn-light-tf" href="{{ request.path }}">Limpar</a>{% endif %}
+  </form>
+  {% if pag.itens %}<div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th class="num">Quantidade</th><th class="num">Estoque</th><th>Usuário</th><th>Motivo</th><th>Vínculo</th><th></th></tr></thead>
+    <tbody>{% for m in pag.itens %}<tr>
+      <td data-label="Data">{{ m.data_hora|data_br }}</td><td data-label="Produto"><a class="name text-reset" href="{{ url_for('produtos.detalhes', id=m.produto_id) }}">{{ m.produto }}</a><span class="sub">{{ m.sku }}</span></td>
+      <td data-label="Tipo">{{ tipo_badge(m.tipo) }}</td><td data-label="Quantidade" class="num">{{ delta(m.delta) }}</td>
+      <td data-label="Estoque" class="num">{{ m.estoque_anterior }} → {{ m.estoque_posterior }}</td><td data-label="Usuário">{{ m.usuario }}</td><td data-label="Motivo">{{ m.motivo|capitalize }}</td>
+      <td data-label="Vínculo">{{ m.cliente or m.fornecedor or '—' }}</td>
+      <td class="row-actions"><a class="btn btn-sm btn-light-tf" href="{{ url_for('movimentacoes.detalhes', id=m.id) }}" aria-label="Detalhes"><i class="bi bi-eye"></i></a></td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(pag) }}
+  {% else %}{% call vazio('arrow-left-right', 'Nenhuma movimentação encontrada', 'Ajuste os filtros ou registre uma nova movimentação.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

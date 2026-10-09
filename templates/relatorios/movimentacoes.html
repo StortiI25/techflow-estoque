@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, tipo_badge, delta, paginacao, vazio %}
+{% block titulo %}Relatório de movimentações{% endblock %}
+{% block content %}
+{% call cabecalho('Relatório de movimentações', 'Entradas, saídas e saldo no período filtrado.') %}<a class="btn btn-light-tf" href="{{ url_for('relatorios.movimentacoes', formato='csv', **f) }}"><i class="bi bi-filetype-csv me-1"></i>Exportar CSV</a>{% endcall %}
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Entradas</span><span class="v qty-pos">+{{ d.entradas|numero }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Saídas</span><span class="v qty-neg">-{{ d.saidas|numero }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Saldo</span><span class="v">{{ d.saldo|numero }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Valor movimentado</span><span class="v">{{ d.valor_movimentado|brl }}</span></div></div></div>
+<div class="card-tf flush">
+  <form class="filter-bar" method="get">
+    <div class="f grow"><label for="produto_id">Produto</label><select class="form-select" id="produto_id" name="produto_id"><option value="">Todos</option>{% for p in produtos %}<option value="{{ p.id }}" {{ 'selected' if f.get('produto_id') == p.id|string }}>{{ p.nome }} ({{ p.sku }})</option>{% endfor %}</select></div>
+    <div class="f"><label for="tipo">Tipo</label><select class="form-select" id="tipo" name="tipo"><option value="">Todos</option>{% for v, t in [('entrada','Entrada'),('saida','Saída'),('ajuste','Ajuste')] %}<option value="{{ v }}" {{ 'selected' if f.get('tipo') == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="data_inicio">De</label><input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ f.get('data_inicio', '') }}"></div>
+    <div class="f"><label for="data_fim">Até</label><input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ f.get('data_fim', '') }}"></div>
+    <div class="f"><label for="usuario_id">Usuário</label><select class="form-select" id="usuario_id" name="usuario_id"><option value="">Todos</option>{% for u in usuarios %}<option value="{{ u.id }}" {{ 'selected' if f.get('usuario_id') == u.id|string }}>{{ u.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="motivo">Motivo</label><select class="form-select" id="motivo" name="motivo"><option value="">Todos</option>{% for m in motivos %}<option value="{{ m }}" {{ 'selected' if f.get('motivo') == m }}>{{ m|capitalize }}</option>{% endfor %}</select></div>
+    {% if f %}<a class="btn btn-light-tf" href="{{ url_for('relatorios.movimentacoes') }}">Limpar</a>{% endif %}
+  </form>
+  {% if d.itens %}<div class="table-responsive"><table class="table-tf table-stack"><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th class="num">Quantidade</th><th>Motivo</th><th>Usuário</th><th class="num">Valor</th></tr></thead>
+    <tbody>{% for m in d.itens %}<tr><td data-label="Data">{{ m.data_hora|data_br }}</td><td data-label="Produto">{{ m.produto }}</td><td data-label="Tipo">{{ tipo_badge(m.tipo) }}</td><td data-label="Quantidade" class="num">{{ delta(m.delta) }}</td>
+      <td data-label="Motivo">{{ m.motivo|capitalize }}</td><td data-label="Usuário">{{ m.usuario }}</td><td data-label="Valor" class="num">{{ m.valor_total|brl }}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(d) }}{% else %}{% call vazio('search', 'Nenhuma movimentação no filtro', 'Altere o período ou os filtros.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

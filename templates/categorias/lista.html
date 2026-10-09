@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, ativo_badge, vazio, btn_confirma %}
+{% block titulo %}Categorias{% endblock %}
+{% block content %}
+{% call cabecalho('Categorias', 'Organize os produtos por categoria.') %}{% if pode('cadastros') %}<a class="btn btn-primary" href="{{ url_for('categorias.nova') }}"><i class="bi bi-plus-lg me-1"></i>Nova categoria</a>{% endif %}{% endcall %}
+<div class="card-tf flush">
+  {% if categorias %}<div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Nome</th><th class="num">Produtos</th><th class="num">Qtd. em estoque</th><th class="num">Valor total</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for c in categorias %}<tr class="{{ 'inativo' if not c.ativo }}">
+      <td data-label="Nome"><a class="name text-reset" href="{{ url_for('produtos.lista', categoria_id=c.id) }}">{{ c.nome }}</a><span class="sub">{{ c.descricao or '' }}</span></td>
+      <td data-label="Produtos" class="num">{{ c.qtd_produtos }}</td><td data-label="Estoque" class="num">{{ c.qtd_estoque|numero }}</td><td data-label="Valor" class="num">{{ c.valor_total|brl }}</td>
+      <td data-label="Status">{{ ativo_badge(c.ativo) }}</td>
+      <td class="row-actions">{% if pode('cadastros') %}<a class="btn btn-sm btn-light-tf" href="{{ url_for('categorias.editar', id=c.id) }}" aria-label="Editar"><i class="bi bi-pencil"></i></a>
+        {{ btn_confirma(url_for('categorias.status', id=c.id), '', 'Desativar a categoria ' ~ c.nome ~ '?' if c.ativo else 'Reativar a categoria ' ~ c.nome ~ '?', 'Desativar categoria?' if c.ativo else 'Reativar categoria?', 'btn btn-sm btn-light-tf', 'slash-circle' if c.ativo else 'arrow-counterclockwise') }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  {% else %}{% call vazio('tags', 'Nenhuma categoria cadastrada', 'Crie categorias para organizar os produtos.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}

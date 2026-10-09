@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import campo, area, selecao, cabecalho, csrf %}
+{% block titulo %}{{ 'Editar fornecedor' if f else 'Novo fornecedor' }}{% endblock %}
+{% block content %}
+{% call cabecalho('Editar fornecedor' if f else 'Novo fornecedor') %}{% endcall %}
+<form method="post" class="card-tf needs-validation" novalidate>{{ csrf() }}
+  <div class="row g-3">
+    {{ campo('razao_social', 'Razão social', dados, erros, obrigatorio=true, col='col-md-6') }}{{ campo('nome_fantasia', 'Nome fantasia', dados, erros) }}
+    {{ campo('cnpj', 'CNPJ', dados, erros, col='col-md-4', ajuda='Somente números ou com máscara.') }}{{ campo('email', 'E-mail', dados, erros, 'email', col='col-md-4') }}{{ campo('telefone', 'Telefone', dados, erros, 'tel', col='col-md-4') }}
+    {{ campo('endereco', 'Endereço', dados, erros, col='col-md-6') }}{{ campo('cidade', 'Cidade', dados, erros, col='col-md-4') }}
+    {{ selecao('estado', 'Estado', estados, dados, erros, valor=None, texto=None, vazio='UF', col='col-md-2') }}
+    {{ area('observacoes', 'Observações', dados, erros) }}
+  </div>
+  <div class="form-actions mt-3"><a class="btn btn-light-tf" href="{{ url_for('fornecedores.lista') }}">Cancelar</a><button class="btn btn-primary">Salvar</button></div>
+</form>
+{% endblock %}

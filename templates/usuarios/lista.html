@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, ativo_badge, paginacao, vazio, btn_confirma %}
+{% block titulo %}Usuários{% endblock %}
+{% block content %}
+{% call cabecalho('Usuários', 'Administre acessos e permissões.') %}<a class="btn btn-primary" href="{{ url_for('usuarios.novo') }}"><i class="bi bi-plus-lg me-1"></i>Novo usuário</a>{% endcall %}
+<div class="row g-3 mb-3">{% for p, nome in PERFIS.items() %}<div class="col-4"><div class="card-tf stat-card"><span class="l">{{ nome }}s ativos</span><span class="v">{{ resumo[p] }}</span></div></div>{% endfor %}</div>
+<div class="card-tf flush">
+  <form class="filter-bar" method="get"><div class="f grow"><label for="q">Pesquisar</label><input type="search" class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nome, e-mail ou usuário"></div></form>
+  {% if pag.itens %}<div class="table-responsive"><table class="table-tf table-stack"><thead><tr><th>Usuário</th><th>Perfil</th><th>Contato</th><th>Último login</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for u in pag.itens %}<tr class="{{ 'inativo' if not u.ativo }}">
+      <td data-label="Usuário"><span class="name">{{ u.nome }}</span><span class="sub">{{ u.usuario }} · {{ u.email }}</span></td><td data-label="Perfil"><span class="badge-tf badge-info">{{ PERFIS[u.perfil] }}</span></td>
+      <td data-label="Contato">{{ u.telefone or '—' }}<span class="sub">{{ u.cargo or '' }}</span></td><td data-label="Último login">{{ u.ultimo_login|data_br }}</td><td data-label="Status">{{ ativo_badge(u.ativo) }}</td>
+      <td class="row-actions"><a class="btn btn-sm btn-light-tf" href="{{ url_for('usuarios.editar', id=u.id) }}" aria-label="Editar"><i class="bi bi-pencil"></i></a>
+        {% if u.id != usuario_logado.id %}{{ btn_confirma(url_for('usuarios.status', id=u.id), '', 'Bloquear o acesso de ' ~ u.nome ~ '?' if u.ativo else 'Desbloquear ' ~ u.nome ~ '?', 'Bloquear usuário?' if u.ativo else 'Desbloquear usuário?', 'btn btn-sm btn-light-tf', 'lock' if u.ativo else 'unlock') }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(pag) }}{% else %}{% call vazio('person', 'Nenhum usuário encontrado') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

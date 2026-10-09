@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, status_badge, paginacao, vazio %}
+{% block titulo %}Relatório de estoque{% endblock %}
+{% block content %}
+{% call cabecalho('Relatório de estoque', 'Posição atual dos produtos.') %}<a class="btn btn-light-tf" href="{{ url_for('relatorios.estoque', formato='csv', **f) }}"><i class="bi bi-filetype-csv me-1"></i>Exportar CSV</a>{% endcall %}
+<div class="row g-3 mb-3"><div class="col-6"><div class="card-tf stat-card"><span class="l">Itens em estoque (filtro)</span><span class="v">{{ d.total_qtd|numero }}</span></div></div>
+  <div class="col-6"><div class="card-tf stat-card"><span class="l">Valor total</span><span class="v">{{ d.total_valor|brl }}</span></div></div></div>
+<div class="card-tf flush">
+  <form class="filter-bar" method="get">
+    <div class="f"><label for="categoria_id">Categoria</label><select class="form-select" id="categoria_id" name="categoria_id"><option value="">Todas</option>{% for c in categorias %}<option value="{{ c.id }}" {{ 'selected' if f.get('categoria_id') == c.id|string }}>{{ c.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="fornecedor_id">Fornecedor</label><select class="form-select" id="fornecedor_id" name="fornecedor_id"><option value="">Todos</option>{% for x in fornecedores %}<option value="{{ x.id }}" {{ 'selected' if f.get('fornecedor_id') == x.id|string }}>{{ x.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="status">Status</label><select class="form-select" id="status" name="status"><option value="">Todos</option>{% for v, t in [('normal','Normal'),('baixo','Estoque baixo'),('esgotado','Esgotado')] %}<option value="{{ v }}" {{ 'selected' if f.get('status') == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="data_inicio">Movimentou de</label><input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ f.get('data_inicio', '') }}"></div>
+    <div class="f"><label for="data_fim">até</label><input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ f.get('data_fim', '') }}"></div>
+    {% if f %}<a class="btn btn-light-tf" href="{{ url_for('relatorios.estoque') }}">Limpar</a>{% endif %}
+  </form>
+  {% if d.itens %}<div class="table-responsive"><table class="table-tf table-stack"><thead><tr><th>Produto</th><th>SKU</th><th>Categoria</th><th class="num">Estoque</th><th class="num">Preço de custo</th><th class="num">Valor total</th><th>Status</th></tr></thead>
+    <tbody>{% for p in d.itens %}<tr><td data-label="Produto"><a class="name text-reset" href="{{ url_for('produtos.detalhes', id=p.id) }}">{{ p.nome }}</a></td><td data-label="SKU">{{ p.sku }}</td><td data-label="Categoria">{{ p.categoria }}</td>
+      <td data-label="Estoque" class="num">{{ p.estoque_atual }}</td><td data-label="Custo" class="num">{{ p.preco_custo|brl }}</td><td data-label="Valor" class="num">{{ (p.estoque_atual * p.preco_custo)|brl }}</td><td data-label="Status">{{ status_badge(p.status) }}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(d) }}{% else %}{% call vazio('search', 'Nenhum produto encontrado', 'Nenhum produto corresponde aos filtros.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

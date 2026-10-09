@@ -1,0 +1,17 @@
+{% from '_macros.html' import campo, selecao, csrf %}
+<form method="post" class="card-tf needs-validation" novalidate style="max-width:860px">{{ csrf() }}
+  <div class="form-section"><h2>Dados</h2><div class="row g-3">
+    {{ campo('nome', 'Nome completo', dados, erros, obrigatorio=true, col='col-md-6') }}{{ campo('cargo', 'Cargo', dados, erros) }}
+    {{ campo('usuario', 'Usuário (login)', dados, erros, obrigatorio=true) }}{{ campo('email', 'E-mail', dados, erros, 'email', true) }}
+    {{ campo('telefone', 'Telefone', dados, erros, 'tel') }}
+    <div class="col-md-6"><label for="perfil" class="form-label">Perfil <span class="text-danger">*</span></label>
+      <select class="form-select {{ 'is-invalid' if erros.get('perfil') }}" id="perfil" name="perfil">{% for v, t in perfis.items() %}<option value="{{ v }}" {{ 'selected' if dados.get('perfil') == v }}>{{ t }}</option>{% endfor %}</select>
+      {% if erros.get('perfil') %}<div class="invalid-feedback">{{ erros['perfil'] }}</div>{% endif %}
+      <div class="form-text">Administrador: tudo · Funcionário: movimenta estoque · Visualizador: somente leitura.</div></div>
+  </div></div>
+  <div class="form-section"><h2>{{ 'Redefinir senha (opcional)' if editando else 'Senha' }}</h2><div class="row g-3">
+    {{ campo('senha', 'Senha', {}, erros, 'password', not editando, 'Mínimo de 8 caracteres, com maiúscula, minúscula e número.', extra='autocomplete="new-password"') }}
+    {{ campo('confirmar_senha', 'Confirmar senha', {}, erros, 'password', not editando) }}
+  </div></div>
+  <div class="form-actions"><a class="btn btn-light-tf" href="{{ url_for('usuarios.lista') }}">Cancelar</a><button class="btn btn-primary">Salvar</button></div>
+</form>

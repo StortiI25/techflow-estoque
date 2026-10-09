@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import ativo_badge, vazio, delta %}
+{% block titulo %}{{ f.nome_fantasia or f.razao_social }}{% endblock %}
+{% block content %}
+<div class="breadcrumb-tf"><a href="{{ url_for('fornecedores.lista') }}">Fornecedores</a> / {{ f.razao_social }}</div>
+<div class="page-head"><div><h1>{{ f.nome_fantasia or f.razao_social }}</h1><div class="d-flex gap-2 align-items-center">{{ ativo_badge(f.ativo) }}<span class="text-muted">{{ f.cnpj|documento }}</span></div></div>
+  {% if pode('cadastros') %}<a class="btn btn-light-tf" href="{{ url_for('fornecedores.editar', id=f.id) }}"><i class="bi bi-pencil me-1"></i>Editar</a>{% endif %}</div>
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Total comprado</span><span class="v">{{ d.total_comprado|brl }}</span></div></div>
+  <div class="col-6 col-xl-3"><div class="card-tf stat-card"><span class="l">Produtos fornecidos</span><span class="v">{{ d.produtos|length }}</span></div></div>
+  <div class="col-12 col-xl-6"><div class="card-tf stat-card"><span class="l">Última movimentação</span><span class="v">{{ d.ultima_movimentacao|data_br }}</span></div></div>
+</div>
+<div class="card-tf mb-3"><div class="card-head"><h2>Dados</h2></div><dl class="detail-list">
+  <div><dt>Razão social</dt><dd>{{ f.razao_social }}</dd></div><div><dt>E-mail</dt><dd>{{ f.email or '—' }}</dd></div><div><dt>Telefone</dt><dd>{{ f.telefone or '—' }}</dd></div>
+  <div><dt>Endereço</dt><dd>{{ f.endereco or '—' }}</dd></div><div><dt>Cidade/UF</dt><dd>{{ f.cidade or '—' }}{{ '/' ~ f.estado if f.estado }}</dd></div><div><dt>Observações</dt><dd>{{ f.observacoes or '—' }}</dd></div></dl></div>
+<div class="row g-3">
+  <div class="col-12 col-xl-6"><div class="card-tf flush h-100"><div class="card-head"><h2>Produtos fornecidos</h2></div>
+    {% if d.produtos %}<div class="table-responsive"><table class="table-tf"><thead><tr><th>Produto</th><th class="num">Estoque</th><th class="num">Custo</th></tr></thead><tbody>
+      {% for p in d.produtos %}<tr><td><a class="name text-reset" href="{{ url_for('produtos.detalhes', id=p.id) }}">{{ p.nome }}</a><span class="sub">{{ p.sku }}</span></td><td class="num">{{ p.estoque_atual }}</td><td class="num">{{ p.preco_custo|brl }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}{% call vazio('box', 'Nenhum produto vinculado') %}{% endcall %}{% endif %}</div></div>
+  <div class="col-12 col-xl-6"><div class="card-tf flush h-100"><div class="card-head"><h2>Últimas entradas</h2></div>
+    {% if d.entradas %}<div class="table-responsive"><table class="table-tf"><thead><tr><th>Data</th><th>Produto</th><th class="num">Qtd.</th><th class="num">Valor</th></tr></thead><tbody>
+      {% for m in d.entradas %}<tr><td>{{ m.data_hora|data_br }}</td><td>{{ m.produto }}</td><td class="num">{{ delta(m.delta) }}</td><td class="num">{{ m.valor_total|brl }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}{% call vazio('box-arrow-in-down', 'Nenhuma entrada registrada') %}{% endcall %}{% endif %}</div></div>
+</div>
+{% endblock %}

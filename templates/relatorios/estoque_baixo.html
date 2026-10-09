@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, status_badge, paginacao, vazio %}
+{% block titulo %}Relatório de estoque baixo{% endblock %}
+{% block content %}
+{% call cabecalho('Relatório de estoque baixo', 'Produtos no estoque mínimo ou abaixo dele.') %}<a class="btn btn-light-tf" href="{{ url_for('relatorios.estoque_baixo', formato='csv') }}"><i class="bi bi-filetype-csv me-1"></i>Exportar CSV</a>{% endcall %}
+<div class="card-tf flush">
+  {% if d.itens %}<div class="table-responsive"><table class="table-tf table-stack"><thead><tr><th>Produto</th><th class="num">Estoque atual</th><th class="num">Estoque mínimo</th><th class="num">Diferença</th><th>Status</th></tr></thead>
+    <tbody>{% for p in d.itens %}<tr><td data-label="Produto"><a class="name text-reset" href="{{ url_for('produtos.detalhes', id=p.id) }}">{{ p.nome }}</a><span class="sub">{{ p.sku }}</span></td>
+      <td data-label="Atual" class="num">{{ p.estoque_atual }}</td><td data-label="Mínimo" class="num">{{ p.estoque_minimo }}</td><td data-label="Diferença" class="num qty-neg">{{ p.estoque_atual - p.estoque_minimo }}</td><td data-label="Status">{{ status_badge(p.status) }}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(d) }}{% else %}{% call vazio('check2-circle', 'Nenhum produto com estoque baixo', 'Todos os produtos estão acima do estoque mínimo.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}

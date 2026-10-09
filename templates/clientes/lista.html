@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, ativo_badge, paginacao, vazio, btn_confirma %}
+{% block titulo %}Clientes{% endblock %}
+{% block content %}
+{% call cabecalho('Clientes', 'Quem recebe as saídas do seu estoque.') %}{% if pode('cadastros') %}<a class="btn btn-primary" href="{{ url_for('clientes.novo') }}"><i class="bi bi-plus-lg me-1"></i>Novo cliente</a>{% endif %}{% endcall %}
+<div class="card-tf flush">
+  <form class="filter-bar" method="get"><div class="f grow"><label for="q">Pesquisar</label><input type="search" class="form-control" id="q" name="q" value="{{ q }}" placeholder="Nome, CPF/CNPJ ou e-mail"></div></form>
+  {% if pag.itens %}<div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Cliente</th><th>CPF/CNPJ</th><th>Contato</th><th>Cidade/UF</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for c in pag.itens %}<tr class="{{ 'inativo' if not c.ativo }}">
+      <td data-label="Cliente"><a class="name text-reset" href="{{ url_for('clientes.detalhes', id=c.id) }}">{{ c.nome }}</a></td><td data-label="CPF/CNPJ">{{ c.documento|documento }}</td>
+      <td data-label="Contato">{{ c.email or '—' }}<span class="sub">{{ c.telefone or '' }}</span></td><td data-label="Cidade/UF">{{ c.cidade or '—' }}{{ '/' ~ c.estado if c.estado }}</td><td data-label="Status">{{ ativo_badge(c.ativo) }}</td>
+      <td class="row-actions"><a class="btn btn-sm btn-light-tf" href="{{ url_for('clientes.detalhes', id=c.id) }}" aria-label="Detalhes"><i class="bi bi-eye"></i></a>
+        {% if pode('cadastros') %}<a class="btn btn-sm btn-light-tf" href="{{ url_for('clientes.editar', id=c.id) }}" aria-label="Editar"><i class="bi bi-pencil"></i></a>
+        {{ btn_confirma(url_for('clientes.status', id=c.id), '', 'Desativar este cliente? O histórico será preservado.' if c.ativo else 'Reativar este cliente?', 'Desativar cliente?' if c.ativo else 'Reativar cliente?', 'btn btn-sm btn-light-tf', 'slash-circle' if c.ativo else 'arrow-counterclockwise') }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(pag) }}
+  {% elif q %}{% call vazio('search', 'Nenhum cliente encontrado', 'Tente outro termo de busca.') %}{% endcall %}
+  {% else %}{% call vazio('people', 'Nenhum cliente cadastrado', 'Cadastre clientes para vincular às saídas.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

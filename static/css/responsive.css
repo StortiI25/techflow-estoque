@@ -1,0 +1,32 @@
+@media (max-width:1199.98px){
+  .global-search{max-width:360px}
+}
+@media (max-width:991.98px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none;box-shadow:0 0 40px rgba(2,6,23,.5)}
+  .sidebar-backdrop.show{display:block;position:fixed;inset:0;background:rgba(2,6,23,.5);z-index:1035}
+  .main{margin-left:0}
+  .topbar{padding:0 1rem}.topbar .menu-btn{display:block}
+  .content{padding:1.1rem}
+  .profile-btn .who{display:none}
+}
+@media (max-width:767.98px){
+  .page-head h1{font-size:1.4rem}
+  .page-head .btn,.page-head form{width:100%}
+  .global-search{display:none}.global-search.show-mobile{display:block;position:absolute;left:.75rem;right:.75rem;top:68px;max-width:none;background:#fff;padding:.6rem;border-radius:12px;box-shadow:var(--tf-shadow)}
+  .global-search.show-mobile i{left:1.6rem}
+  .search-toggle{display:inline-block!important}
+  .form-actions .btn{flex:1 1 100%}
+  .kpi .value{font-size:1.55rem}
+  .filter-bar .f{flex:1 1 100%}
+  .card-tf{padding:1rem}
+  .notif-menu{position:fixed!important;left:.5rem!important;right:.5rem!important;top:68px!important;width:auto;transform:none!important}
+  /* tabelas viram cartões empilhados no celular */
+  .table-stack thead{display:none}
+  .table-stack tbody tr{display:block;padding:.75rem 1rem;border-bottom:1px solid var(--tf-border)}
+  .table-stack tbody td{display:flex;justify-content:space-between;gap:1rem;border:0;padding:.25rem 0;text-align:right}
+  .table-stack tbody td::before{content:attr(data-label);color:var(--tf-muted);font-size:.78rem;font-weight:500;text-align:left;flex:none}
+  .table-stack .row-actions{justify-content:flex-end}
+}
+.search-toggle{display:none}
+.table-responsive{-webkit-overflow-scrolling:touch}

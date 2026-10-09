@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, csrf, area %}
+{% from 'movimentacoes/_partes.html' import produto_select, motivo_select, preview %}
+{% block titulo %}Nova entrada{% endblock %}
+{% block content %}
+{% call cabecalho('Nova entrada', 'Registre a chegada de produtos ao estoque.') %}{% endcall %}
+{% if erro %}<div class="alert alert-danger"><i class="bi bi-x-circle me-1"></i>{{ erro }}</div>{% endif %}
+<form method="post" class="card-tf" style="max-width:860px">{{ csrf() }}
+  <div class="row g-3">
+    <div class="col-12"><span class="badge-tf badge-success">Tipo: ENTRADA</span></div>
+    {{ produto_select(produtos, dados) }}
+    <div class="col-md-6"><label for="quantidade" class="form-label">Quantidade <span class="text-danger" aria-hidden="true">*</span></label><input type="number" min="1" step="1" class="form-control" id="quantidade" name="quantidade" value="{{ dados.get('quantidade', '') }}" required></div>
+    {{ motivo_select(motivos, dados) }}
+    <div class="col-md-6"><label for="fornecedor_id" class="form-label">Fornecedor</label><select class="form-select" id="fornecedor_id" name="fornecedor_id"><option value="">Sem fornecedor</option>
+      {% for f in fornecedores %}<option value="{{ f.id }}" {{ 'selected' if dados.get('fornecedor_id')|string == f.id|string }}>{{ f.nome }}</option>{% endfor %}</select></div>
+    {{ area('observacao', 'Observação', dados, {}) }}
+    {{ preview('entrada', 'Confirmar entrada') }}
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/movimentacoes.js') }}"></script>{% endblock %}

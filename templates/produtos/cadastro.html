@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho %}
+{% block titulo %}Novo produto{% endblock %}
+{% block content %}
+{% call cabecalho('Novo produto', 'Preencha os dados. Campos com * são obrigatórios.') %}{% endcall %}
+{% set editando = false %}{% set p = none %}
+{% include 'produtos/_form.html' %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/produtos.js') }}"></script>{% endblock %}

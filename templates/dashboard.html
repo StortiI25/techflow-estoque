@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import status_badge, tipo_badge, delta, notif_icone, vazio %}
+{% block titulo %}Início{% endblock %}
+{% set cores = ['#2563EB', '#16A34A', '#F59E0B', '#6366F1', '#06B6D4', '#EF4444', '#84CC16', '#EC4899'] %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <div class="text-muted">Bem-vindo de volta,</div>
+    <h1>{{ usuario_logado.nome.split()[:2]|join(' ') }}!</h1>
+    <p>Aqui está o resumo do seu estoque.</p>
+  </div>
+  <div class="card-tf d-flex align-items-center gap-3 py-2 px-3"><i class="bi bi-calendar3 fs-5"></i><div class="small lh-sm"><div>Hoje</div><div class="text-muted">{{ hoje_extenso }}</div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-sm-6 col-xl-3"><a class="text-reset" href="{{ url_for('produtos.lista') }}"><div class="card-tf kpi">
+    <div class="kpi-icon kpi-blue"><i class="bi bi-box"></i></div><div class="label">Total de Produtos</div>
+    <div class="value">{{ kpi.total_produtos|numero }}</div><div class="hint"><i class="bi bi-plus-circle text-success"></i> {{ kpi.novos_mes }} cadastrados neste mês</div></div></a></div>
+  <div class="col-12 col-sm-6 col-xl-3"><a class="text-reset" href="{{ url_for('produtos.lista', estoque='com') }}"><div class="card-tf kpi">
+    <div class="kpi-icon kpi-green"><i class="bi bi-box-seam"></i></div><div class="label">Produtos em Estoque</div>
+    <div class="value">{{ kpi.em_estoque|numero }}</div><div class="hint">{{ kpi.esgotados }} esgotado{{ 's' if kpi.esgotados != 1 }}</div></div></a></div>
+  <div class="col-12 col-sm-6 col-xl-3"><a class="text-reset" href="{{ url_for('produtos.lista', status='baixo') }}"><div class="card-tf kpi">
+    <div class="kpi-icon kpi-amber"><i class="bi bi-exclamation-triangle"></i></div><div class="label">Estoque Baixo</div>
+    <div class="value">{{ kpi.estoque_baixo|numero }}</div><div class="hint">No mínimo definido ou abaixo</div></div></a></div>
+  <div class="col-12 col-sm-6 col-xl-3"><div class="card-tf kpi">
+    <div class="kpi-icon kpi-violet"><i class="bi bi-currency-dollar"></i></div><div class="label">Valor Total em Estoque</div>
+    <div class="value">{{ kpi.valor_estoque|brl }}</div><div class="hint">Valor de venda potencial: {{ kpi.valor_venda|brl }}</div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-xl-8"><div class="card-tf h-100">
+    <div class="card-head"><h2>Movimentações nos últimos <span id="tituloDias">7</span> dias</h2>
+      <select id="periodoMov" class="form-select form-select-sm w-auto" aria-label="Período"><option value="7">7 dias</option><option value="30">30 dias</option><option value="90">90 dias</option></select></div>
+    <div class="chart-box"><canvas id="chartMov" aria-label="Gráfico de entradas e saídas" role="img"></canvas><div class="chart-error"><div><i class="bi bi-wifi-off fs-3 d-block"></i>Não foi possível carregar o gráfico.</div></div></div>
+  </div></div>
+  <div class="col-12 col-xl-4"><div class="card-tf h-100">
+    <div class="card-head"><h2>Alertas e notificações</h2><a href="{{ url_for('notificacoes.lista') }}">Ver todos{% if total_alertas > 4 %} ({{ total_alertas }}){% endif %}</a></div>
+    {% for a in alertas %}<a class="alert-row text-reset" href="{{ url_for('produtos.detalhes', id=a.produto_id) }}">{{ notif_icone(a.tipo) }}<div><div class="t">{{ a.titulo }}</div><div class="m">{{ a.mensagem }}</div></div></a>{% endfor %}
+    {% for n in eventos[:2] %}<a class="alert-row text-reset" href="{{ url_for('produtos.detalhes', id=n.produto_id) if n.produto_id else url_for('notificacoes.lista') }}">{{ notif_icone(n.tipo) }}<div class="flex-grow-1"><div class="t">{{ n.titulo }}</div><div class="m">{{ n.mensagem }}</div></div><span class="small text-muted">{{ n.criada_em|tempo_atras }}</span></a>{% endfor %}
+    {% if not alertas and not eventos %}{% call vazio('check2-circle', 'Tudo em ordem', 'Nenhum alerta no momento.') %}{% endcall %}{% endif %}
+  </div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-xl-8"><div class="card-tf flush">
+    <div class="card-head"><h2>Últimas movimentações</h2><a href="{{ url_for('movimentacoes.lista') }}">Ver todas <i class="bi bi-chevron-right"></i></a></div>
+    {% if movimentacoes %}
+    <div class="table-responsive"><table class="table-tf table-stack">
+      <thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th class="num">Quantidade</th><th>Usuário</th><th></th></tr></thead>
+      <tbody>{% for m in movimentacoes %}<tr>
+        <td data-label="Data">{{ m.data_hora|data_br }}</td>
+        <td data-label="Produto"><span class="name">{{ m.produto }}</span></td>
+        <td data-label="Tipo">{{ tipo_badge(m.tipo) }}</td>
+        <td data-label="Quantidade" class="num">{{ delta(m.delta) }}</td>
+        <td data-label="Usuário">{{ m.usuario }}</td>
+        <td class="row-actions"><a class="btn btn-sm btn-light-tf" href="{{ url_for('movimentacoes.detalhes', id=m.id) }}" aria-label="Ver movimentação"><i class="bi bi-eye"></i></a></td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}{% call vazio('arrow-left-right', 'Nenhuma movimentação ainda', 'Registre uma entrada para começar.') %}{% endcall %}{% endif %}
+  </div></div>
+  <div class="col-12 col-xl-4 d-flex flex-column gap-3">
+    <div class="card-tf"><div class="card-head"><h2>Acesso rápido</h2></div>
+      <div class="quick-grid">
+        {% if pode('cadastros') %}<a class="quick-btn" href="{{ url_for('produtos.novo') }}"><i class="bi bi-box"></i>Cadastrar Produto</a>{% endif %}
+        {% if pode('movimentar') %}<a class="quick-btn" href="{{ url_for('movimentacoes.nova_entrada') }}"><i class="bi bi-box-arrow-in-down"></i>Registrar Entrada</a>
+        <a class="quick-btn" href="{{ url_for('movimentacoes.nova_saida') }}"><i class="bi bi-box-arrow-up"></i>Registrar Saída</a>{% endif %}
+        {% if pode('relatorios') %}<a class="quick-btn" href="{{ url_for('relatorios.index') }}"><i class="bi bi-bar-chart"></i>Gerar Relatório</a>{% endif %}
+      </div></div>
+    <div class="card-tf"><div class="card-head"><h2>Estoque por categoria</h2><a href="{{ url_for('categorias.lista') }}">Ver detalhado</a></div>
+      {% if categorias %}
+      <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
+        <div class="donut-wrap"><canvas id="chartCat" data-dados='{{ categorias|tojson|forceescape }}' aria-label="Produtos por categoria" role="img"></canvas>
+          <div class="donut-center"><strong>{{ kpi.total_produtos|numero }}</strong><span>produtos</span></div></div>
+        <div class="flex-grow-1" style="min-width:150px">{% for c in categorias %}<div class="legend-row"><span class="sw" style="background:{{ cores[loop.index0 % cores|length] }}"></span>{{ c.nome }}<span class="pct">{{ c.percentual }}%</span></div>{% endfor %}</div>
+      </div>
+      {% else %}{% call vazio('tags', 'Sem produtos', 'Cadastre produtos para ver a distribuição.') %}{% endcall %}{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>document.getElementById('periodoMov')?.addEventListener('change',function(e){document.getElementById('tituloDias').textContent=e.target.value;});</script>
+{% endblock %}

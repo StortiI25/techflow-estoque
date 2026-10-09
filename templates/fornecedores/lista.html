@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, ativo_badge, paginacao, vazio, btn_confirma %}
+{% block titulo %}Fornecedores{% endblock %}
+{% block content %}
+{% call cabecalho('Fornecedores', 'Empresas que abastecem o seu estoque.') %}{% if pode('cadastros') %}<a class="btn btn-primary" href="{{ url_for('fornecedores.novo') }}"><i class="bi bi-plus-lg me-1"></i>Novo fornecedor</a>{% endif %}{% endcall %}
+<div class="card-tf flush">
+  <form class="filter-bar" method="get"><div class="f grow"><label for="q">Pesquisar</label><input type="search" class="form-control" id="q" name="q" value="{{ q }}" placeholder="Razão social, fantasia, CNPJ ou e-mail"></div></form>
+  {% if pag.itens %}<div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Fornecedor</th><th>CNPJ</th><th>Contato</th><th>Cidade/UF</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for f in pag.itens %}<tr class="{{ 'inativo' if not f.ativo }}">
+      <td data-label="Fornecedor"><a class="name text-reset" href="{{ url_for('fornecedores.detalhes', id=f.id) }}">{{ f.nome_fantasia or f.razao_social }}</a>{% if f.nome_fantasia %}<span class="sub">{{ f.razao_social }}</span>{% endif %}</td>
+      <td data-label="CNPJ">{{ f.cnpj|documento }}</td><td data-label="Contato">{{ f.email or '—' }}<span class="sub">{{ f.telefone or '' }}</span></td>
+      <td data-label="Cidade/UF">{{ f.cidade or '—' }}{{ '/' ~ f.estado if f.estado }}</td><td data-label="Status">{{ ativo_badge(f.ativo) }}</td>
+      <td class="row-actions"><a class="btn btn-sm btn-light-tf" href="{{ url_for('fornecedores.detalhes', id=f.id) }}" aria-label="Detalhes"><i class="bi bi-eye"></i></a>
+        {% if pode('cadastros') %}<a class="btn btn-sm btn-light-tf" href="{{ url_for('fornecedores.editar', id=f.id) }}" aria-label="Editar"><i class="bi bi-pencil"></i></a>
+        {{ btn_confirma(url_for('fornecedores.status', id=f.id), '', 'Desativar este fornecedor? O histórico será preservado.' if f.ativo else 'Reativar este fornecedor?', 'Desativar fornecedor?' if f.ativo else 'Reativar fornecedor?', 'btn btn-sm btn-light-tf', 'slash-circle' if f.ativo else 'arrow-counterclockwise') }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+  {{ paginacao(pag) }}
+  {% elif q %}{% call vazio('search', 'Nenhum fornecedor encontrado', 'Tente outro termo de busca.') %}{% endcall %}
+  {% else %}{% call vazio('truck', 'Nenhum fornecedor cadastrado', 'Cadastre fornecedores para vincular às entradas.') %}{% endcall %}{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

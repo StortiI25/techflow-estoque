@@ -1,0 +1,18 @@
+{% macro produto_select(produtos, dados) %}
+<div class="col-12"><label for="produto_id" class="form-label">Produto <span class="text-danger" aria-hidden="true">*</span></label>
+  <select class="form-select" id="produto_id" name="produto_id" required><option value="">Selecione o produto...</option>
+    {% for p in produtos %}<option value="{{ p.id }}" {{ 'selected' if dados.get('produto_id') is not none and dados.get('produto_id')|string == p.id|string }}>{{ p.nome }} — {{ p.sku }} (estoque: {{ p.estoque_atual }})</option>{% endfor %}</select></div>
+{% endmacro %}
+{% macro motivo_select(motivos, dados) %}
+<div class="col-md-6"><label for="motivo" class="form-label">Motivo <span class="text-danger" aria-hidden="true">*</span></label>
+  <select class="form-select" id="motivo" name="motivo" required><option value="">Selecione...</option>
+    {% for m in motivos %}<option value="{{ m }}" {{ 'selected' if dados.get('motivo') == m }}>{{ m|capitalize }}</option>{% endfor %}</select></div>
+{% endmacro %}
+{% macro preview(tipo, rotulo_botao) %}
+<div class="col-12"><div class="preview-box" id="previewBox" data-tipo="{{ tipo }}" aria-live="polite">
+  <div class="row-p"><span>Estoque atual</span><strong id="pvAtual">—</strong></div>
+  <div class="row-p"><span>{{ 'Variação' if tipo == 'ajuste' else 'Quantidade' }}</span><strong id="pvQtd">—</strong></div>
+  <div class="row-p total"><span>Novo estoque</span><span id="pvNovo">—</span></div>
+  <div class="small text-danger mt-1" id="previewAviso"></div></div></div>
+<div class="col-12 form-actions"><a class="btn btn-light-tf" href="{{ url_for('movimentacoes.lista') }}">Cancelar</a><button type="submit" id="btnConfirmar" class="btn btn-primary" disabled>{{ rotulo_botao }}</button></div>
+{% endmacro %}

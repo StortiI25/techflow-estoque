@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho, status_badge, ativo_badge, paginacao, vazio, btn_confirma %}
+{% block titulo %}Produtos{% endblock %}
+{% block content %}
+{% call cabecalho('Produtos', 'Gerencie todos os produtos cadastrados.') %}
+  {% if pode('cadastros') %}<a class="btn btn-primary" href="{{ url_for('produtos.novo') }}"><i class="bi bi-plus-lg me-1"></i>Novo produto</a>{% endif %}
+{% endcall %}
+<div class="card-tf flush">
+  <form class="filter-bar" method="get" action="{{ url_for('produtos.lista') }}">
+    <div class="f grow"><label for="q">Pesquisar</label><input type="search" class="form-control" id="q" name="q" value="{{ f.get('q', '') }}" placeholder="Nome, SKU ou código de barras"></div>
+    <div class="f"><label for="categoria_id">Categoria</label><select class="form-select" id="categoria_id" name="categoria_id"><option value="">Todas</option>
+      {% for c in categorias %}<option value="{{ c.id }}" {{ 'selected' if f.get('categoria_id') == c.id|string }}>{{ c.nome }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="status">Status</label><select class="form-select" id="status" name="status"><option value="">Todos</option>
+      {% for v, t in [('normal','Normal'),('baixo','Estoque baixo'),('esgotado','Esgotado')] %}<option value="{{ v }}" {{ 'selected' if f.get('status') == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="estoque">Estoque</label><select class="form-select" id="estoque" name="estoque"><option value="">Qualquer</option>
+      {% for v, t in [('com','Com estoque'),('sem','Sem estoque'),('acima_maximo','Acima do máximo')] %}<option value="{{ v }}" {{ 'selected' if f.get('estoque') == v }}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="f"><label for="fornecedor_id">Fornecedor</label><select class="form-select" id="fornecedor_id" name="fornecedor_id"><option value="">Todos</option>
+      {% for x in fornecedores %}<option value="{{ x.id }}" {{ 'selected' if f.get('fornecedor_id') == x.id|string }}>{{ x.nome }}</option>{% endfor %}</select></div>
+    <div class="f" style="min-width:120px;flex:0 1 130px"><label for="ativo">Situação</label><select class="form-select" id="ativo" name="ativo">
+      {% for v, t in [('1','Ativos'),('0','Inativos'),('todos','Todos')] %}<option value="{{ v }}" {{ 'selected' if f.get('ativo', '1') == v }}>{{ t }}</option>{% endfor %}</select></div>
+    {% if f.keys()|reject('equalto', 'ativo')|list %}<a class="btn btn-light-tf" href="{{ url_for('produtos.lista') }}">Limpar</a>{% endif %}
+  </form>
+  {% if pag.itens %}
+  <div class="table-responsive"><table class="table-tf table-stack">
+    <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th class="num">Estoque</th><th class="num">Mínimo</th><th class="num">Custo</th><th class="num">Venda</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for p in pag.itens %}<tr class="{{ 'inativo' if not p.ativo }}">
+      <td data-label="Código">{{ p.sku }}</td>
+      <td data-label="Produto"><a class="name text-reset" href="{{ url_for('produtos.detalhes', id=p.id) }}">{{ p.nome }}</a>{% if p.codigo_barras %}<span class="sub">{{ p.codigo_barras }}</span>{% endif %}</td>
+      <td data-label="Categoria">{{ p.categoria }}</td>
+      <td data-label="Estoque" class="num">{{ p.estoque_atual }} <small class="text-muted">{{ p.unidade }}</small></td>
+      <td data-label="Mínimo" class="num">{{ p.estoque_minimo }}</td>
+      <td data-label="Custo" class="num">{{ p.preco_custo|brl }}</td>
+      <td data-label="Venda" class="num">{{ p.preco_venda|brl }}</td>
+      <td data-label="Status">{% if p.ativo %}{{ status_badge(p.status) }}{% else %}{{ ativo_badge(0) }}{% endif %}</td>
+      <td class="row-actions">
+        <a class="btn btn-sm btn-light-tf" href="{{ url_for('produtos.detalhes', id=p.id) }}" title="Detalhes" aria-label="Detalhes"><i class="bi bi-eye"></i></a>
+        {% if pode('cadastros') %}<a class="btn btn-sm btn-light-tf" href="{{ url_for('produtos.editar', id=p.id) }}" title="Editar" aria-label="Editar"><i class="bi bi-pencil"></i></a>
+        {{ btn_confirma(url_for('produtos.status', id=p.id), '', ('Desativar ' ~ p.nome ~ '? O histórico será preservado.') if p.ativo else ('Reativar ' ~ p.nome ~ '?'), 'Desativar produto?' if p.ativo else 'Reativar produto?', 'btn btn-sm btn-light-tf', 'slash-circle' if p.ativo else 'arrow-counterclockwise') }}{% endif %}
+      </td></tr>{% endfor %}</tbody>
+  </table></div>
+  {{ paginacao(pag) }}
+  {% elif f.keys()|reject('equalto', 'ativo')|list or f.get('ativo', '1') != '1' %}
+    {% call vazio('search', 'Nenhum produto encontrado', 'Nenhum produto corresponde aos filtros aplicados.') %}<a class="btn btn-light-tf mt-3" href="{{ url_for('produtos.lista') }}">Limpar filtros</a>{% endcall %}
+  {% else %}
+    {% call vazio('box', 'Nenhum produto cadastrado', 'Cadastre o primeiro produto para começar a controlar o estoque.') %}{% if pode('cadastros') %}<a class="btn btn-primary mt-3" href="{{ url_for('produtos.novo') }}">Cadastrar produto</a>{% endif %}{% endcall %}
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/filtros.js') }}"></script>{% endblock %}

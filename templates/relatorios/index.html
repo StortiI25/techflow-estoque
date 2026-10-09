@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho %}
+{% block titulo %}Relatórios{% endblock %}
+{% block content %}
+{% call cabecalho('Relatórios', 'Consulte e exporte os dados do estoque.') %}{% endcall %}
+<div class="row g-3">
+  {% for icone, titulo, texto, ep in [('boxes', 'Estoque', 'Posição atual por produto, categoria e fornecedor, com valor total.', 'relatorios.estoque'),
+                                       ('arrow-left-right', 'Movimentações', 'Entradas, saídas, saldo e valor movimentado no período.', 'relatorios.movimentacoes'),
+                                       ('exclamation-triangle', 'Estoque baixo', 'Produtos no mínimo ou abaixo, com a diferença para repor.', 'relatorios.estoque_baixo')] %}
+  <div class="col-md-6 col-xl-4"><a class="text-reset" href="{{ url_for(ep) }}"><div class="card-tf h-100"><div class="kpi-icon kpi-blue"><i class="bi bi-{{ icone }}"></i></div><h2>{{ titulo }}</h2><p class="text-muted mb-0 mt-1">{{ texto }}</p></div></a></div>{% endfor %}
+</div>
+{% endblock %}

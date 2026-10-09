@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cabecalho %}
+{% block titulo %}Novo usuário{% endblock %}
+{% block content %}{% call cabecalho('Novo usuário') %}{% endcall %}{% set editando = false %}{% include 'usuarios/_form.html' %}{% endblock %}
