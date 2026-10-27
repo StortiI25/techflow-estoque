@@ -3,9 +3,10 @@ import logging
 import os
 
 from flask import Flask, g, render_template, request, session, url_for
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
-from database.database import banco_inicializado, close_db, init_db
+from database.database import close_db, init_db
 from models import configuracao, notificacao, usuario
 from utils.formatters import data_extenso, registrar_filtros
 from utils.security import PERFIS, csrf_token, pode, verificar_csrf
@@ -22,6 +23,9 @@ def create_app(overrides=None):
     app.config.from_object(Config)
     if overrides:
         app.config.update(overrides)
+    if app.config["PROXY_HOPS"] > 0:
+        # O IP real do cliente é usado no bloqueio de login e na auditoria.
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=app.config["PROXY_HOPS"])
     os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 

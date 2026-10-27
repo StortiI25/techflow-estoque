@@ -4,7 +4,7 @@ import unittest
 
 from app import create_app
 from database.database import execute
-from models import categoria, cliente, fornecedor, produto, usuario
+from models import categoria, cliente, fornecedor, usuario
 from routes import auth
 
 

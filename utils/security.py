@@ -4,7 +4,7 @@ import secrets
 from functools import wraps
 from urllib.parse import urlparse
 
-from flask import abort, current_app, flash, g, redirect, request, session, url_for
+from flask import abort, current_app, g, redirect, request, session, url_for
 
 PERMISSOES = {
     "admin": {"*"},

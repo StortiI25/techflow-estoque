@@ -1,4 +1,4 @@
-from flask import Blueprint, g, jsonify, render_template, request
+from flask import Blueprint, jsonify, render_template, request
 
 from models import movimentacao, notificacao
 from services import busca_service, dashboard_service, notificacao_service

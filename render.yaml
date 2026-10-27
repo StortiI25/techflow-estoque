@@ -9,5 +9,9 @@ services:
         generateValue: true
       - key: SESSION_COOKIE_SECURE
         value: "1"
+      - key: PROXY_HOPS               # o Render põe 1 proxy na frente do app (IP real no login/auditoria)
+        value: "1"
+      - key: TZ                       # datas do SQLite ('localtime') saem no horário de Brasília, não em UTC
+        value: America/Sao_Paulo
       - key: DATABASE_PATH
         value: /var/data/techflow.db   # exige um Disk persistente montado em /var/data

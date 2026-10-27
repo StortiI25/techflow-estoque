@@ -20,4 +20,7 @@ class Config:
     SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE") == "1"
     PERMANENT_SESSION_LIFETIME = timedelta(days=14)
     CSRF_ENABLED = True
+    # Quantos proxies reversos ficam entre o usuário e o app (Render = 1). Com 0, o cabeçalho
+    # X-Forwarded-For é ignorado, o que evita que alguém forje o IP em ambiente sem proxy.
+    PROXY_HOPS = int(os.getenv("PROXY_HOPS", "0") or 0)
     VERSAO = "1.0.0"
